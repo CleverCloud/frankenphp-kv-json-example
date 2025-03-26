@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Task List</h1>
+        <a href="index.php?action=create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> New Task
+        </a>
+    </div>
+
+    {% if tasks is empty %}
+        <div class="alert alert-info">
+            <p class="mb-0">No tasks have been created. Start by adding a new task!</p>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Ongoing Tasks</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% set hasPending = false %}
+                        {% for task in tasks %}
+                            {% if not task.completed %}
+                                {% set hasPending = true %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h5 class="mb-1">{{ task.title }}</h5>
+                                        <div>
+                                            <a href="index.php?action=toggle&id={{ task.id }}" class="btn btn-sm btn-outline-success" title="Mark as completed">
+                                                <i class="bi bi-check-circle"></i>
+                                            </a>
+                                            <a href="index.php?action=update&id={{ task.id }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger delete-task" title="Delete" data-task-id="{{ task.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% if task.description %}
+                                        <p class="mb-1">{{ task.description }}</p>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">
+                                            {% if task.dueDate %}
+                                                <span class="badge bg-warning text-dark">Due date: {{ task.dueDate }}</span>
+                                            {% endif %}
+                                            <span class="badge {% if task.priority == 'high' %}bg-danger{% elseif task.priority == 'medium' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                                                Priority: {{ task.priority }}
+                                            </span>
+                                        </small>
+                                        <small class="text-muted">Created on {{ task.createdAt|date('m/d/Y') }}</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not hasPending %}
+                            <div class="list-group-item">
+                                <p class="mb-0 text-success">All tasks are completed!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Completed Tasks</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% set hasCompleted = false %}
+                        {% for task in tasks %}
+                            {% if task.completed %}
+                                {% set hasCompleted = true %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h5 class="mb-1 text-decoration-line-through">{{ task.title }}</h5>
+                                        <div>
+                                            <a href="index.php?action=toggle&id={{ task.id }}" class="btn btn-sm btn-outline-warning" title="Mark as not completed">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger delete-task" title="Delete" data-task-id="{{ task.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% if task.description %}
+                                        <p class="mb-1 text-decoration-line-through">{{ task.description }}</p>
+                                    {% endif %}
+                                    <small class="text-muted">Completed on {{ task.createdAt|date('m/d/Y') }}</small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not hasCompleted %}
+                            <div class="list-group-item">
+                                <p class="mb-0 text-muted">No completed tasks yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestionnaire pour les boutons de suppression
+        document.querySelectorAll('.delete-task').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                var taskId = this.getAttribute('data-task-id');
+                
+                if (confirm('Are you sure you want to delete this task?')) {
+                    window.location.href = 'index.php?action=delete&id=' + taskId;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
